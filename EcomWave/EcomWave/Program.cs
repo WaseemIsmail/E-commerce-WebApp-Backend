@@ -41,6 +41,10 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<UserService>();
 
+builder.Services.AddScoped<ProductRepository>();
+builder.Services.AddScoped<ProductService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

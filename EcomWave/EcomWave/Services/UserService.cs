@@ -104,19 +104,30 @@ namespace EcomWave.Services
         //login
         public async Task<User> LoginAsync(string email, string password)
         {
-            
+            // Fetch the user by email
             var user = await _userRepository.GetUserByEmailAsync(email);
 
-            // Validate user 
-            if (user == null || user.Password != password)
+            if (user == null)
             {
-                throw new UnauthorizedAccessException("Invalid email or password.");
+                // Throw an exception for invalid credentials
+                throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
-            user.LastLoginDate = DateTime.UtcNow;
-            await _userRepository.UpdateUserAsync(user.Id, user);
+            if (user.Password != password)
+            {
+                // Throw an exception for invalid credentials
+                throw new UnauthorizedAccessException("Invalid credentials.");
+            }
 
+            if (!user.IsActive)
+            {
+                // Throw an exception if user is inactive
+                throw new UnauthorizedAccessException("User is inactive.");
+            }
+
+            // Return the user if all checks pass
             return user;
         }
+
     }
 }

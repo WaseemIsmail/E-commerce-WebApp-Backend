@@ -45,11 +45,13 @@ namespace EcomWave.Controllers
 
                 return Ok(viewModel);
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                return Unauthorized(new { message = "Invalid email or password" });
+                // Return the specific error message from the exception
+                return Unauthorized(new { message = ex.Message });
             }
         }
+
 
         // GET: api/users
         [HttpGet]
