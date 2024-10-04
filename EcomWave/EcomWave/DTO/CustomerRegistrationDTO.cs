@@ -1,12 +1,11 @@
-﻿namespace EcomWave.ViewModels.User
+﻿namespace EcomWave.DTO
 {
-    public class CreateUserViewModel
+    public class CustomerRegistrationDTO
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public string Role { get; set; }
-        public bool IsActive { get; set; }
     }
+
 }

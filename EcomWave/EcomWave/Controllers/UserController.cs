@@ -1,11 +1,9 @@
-﻿using EcomWave.Configurations;
+﻿using EcomWave.DTO;
 using EcomWave.Models;
 using EcomWave.Services;
-using EcomWave.ViewModels;
-using EcomWave.ViewModels.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace EcomWave.Controllers
@@ -21,130 +19,92 @@ namespace EcomWave.Controllers
             _userService = userService;
         }
 
-        // POST: api/users/login
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel model)
+        // Customer signup endpoint
+        [HttpPost("signup")]
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegistrationDTO customerDTO)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
+            var user = new User
             {
-                var user = await _userService.LoginAsync(model.Email, model.Password);
+                FirstName = customerDTO.FirstName,
+                LastName = customerDTO.LastName,
+                Email = customerDTO.Email,
+                Password = customerDTO.Password,
+                Role = UserRole.Customer,
+                IsActive = false,
+                VendorInfo = null 
+            };
 
-                var viewModel = new UserViewModel
-                {
-                    Id = user.Id,
-                    FullName = $"{user.FirstName} {user.LastName}",
-                    Email = user.Email,
-                    Role = user.Role.ToString(),
-                    IsActive = user.IsActive,
-                    CreatedDate = user.CreatedDate,
-                    LastLoginDate = user.LastLoginDate
-                };
-
-                return Ok(viewModel);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                // Return the specific error message from the exception
-                return Unauthorized(new { message = ex.Message });
-            }
+            await _userService.RegisterCustomerAsync(user);
+            return Ok(new { message = "Customer registered successfully." });
         }
 
 
-        // GET: api/users
+        // Login endpoint
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
+        {
+            var token = await _userService.LoginAsync(loginModel.Email, loginModel.Password);
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { message = "Invalid credentials or inactive account." });
+
+            return Ok(new { token });
+        }
+
+
+        // Register vendor (Admin only)
+        [HttpPost("vendor")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RegisterVendor([FromBody] User vendorUser)
+        {
+
+            await _userService.RegisterVendorAsync(vendorUser);
+            return Ok(new { message = "Vendor registered successfully." });
+        }
+
+        // Register CSR (Admin only)
+        [HttpPost("csr")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RegisterCSR([FromBody] User csrUser)
+        {
+            await _userService.RegisterCSRAsync(csrUser);
+            return Ok(new { message = "CSR registered successfully." });
+        }
+
+        // Deactivate user account (User)
+        [HttpPut("deactivate/{id}")]
+        public async Task<IActionResult> DeactivateUser(string id)
+        {
+            await _userService.DeactivateUserAsync(id);
+            return Ok(new { message = "User deactivated successfully." });
+        }
+
+        // Reactivate user account (CSR only)
+        [HttpPut("reactivate/{id}")]
+        [Authorize(Roles = "CSR")]
+        public async Task<IActionResult> ReactivateUser(string id)
+        {
+            var userRole = User.FindFirst(claim => claim.Type == ClaimTypes.Role)?.Value;
+            await _userService.ReactivateUserAsync(id, userRole);
+            return Ok(new { message = "User reactivated successfully." });
+        }
+
+        // Get all users (Admin only)
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
-
-            var viewModel = users.Select(u => new UserViewModel
-            {
-                Id = u.Id,
-                FullName = $"{u.FirstName} {u.LastName}",
-                Email = u.Email,
-                Role = u.Role.ToString(),
-                IsActive = u.IsActive,
-                CreatedDate = u.CreatedDate,
-                LastLoginDate = u.LastLoginDate
-            });
-
-            return Ok(viewModel); 
+            return Ok(users);
         }
 
-        // GET: api/users/{id}
+        // Get user by ID (Admin only)
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserById(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new UserViewModel
-            {
-                Id = user.Id,
-                FullName = $"{user.FirstName} {user.LastName}",
-                Email = user.Email,
-                Role = user.Role.ToString(),
-                IsActive = user.IsActive,
-                CreatedDate = user.CreatedDate,
-                LastLoginDate = user.LastLoginDate
-            };
-
-            return Ok(viewModel); 
-        }
-
-        // POST: api/users
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = new User
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Password = model.Password, 
-                Role = Enum.Parse<UserRole>(model.Role),
-                CreatedDate = DateTime.UtcNow,
-                IsActive = model.IsActive
-            };
-
-            await _userService.CreateUserAsync(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user); 
-        }
-
-        // PUT: api/users/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] CreateUserViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var updatedUser = new User
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Role = Enum.Parse<UserRole>(model.Role),
-                IsActive = model.IsActive
-            };
-
-            await _userService.UpdateUserAsync(id, updatedUser);
-            return NoContent(); 
-        }
-
-        // DELETE: api/users/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            await _userService.DeleteUserAsync(id);
-            return NoContent(); 
+            return user == null ? NotFound() : Ok(user);
         }
     }
 }

@@ -1,48 +1,56 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Text.Json.Serialization;
 
 namespace EcomWave.Models
 {
     public class User
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)] 
-        public string? Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string UserId { get; set; } = ObjectId.GenerateNewId().ToString();
 
-        [Required]
-        [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters.")]
-        public string FirstName { get; set; } = string.Empty; 
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
 
-        [Required]
-        [StringLength(100, ErrorMessage = "Last name cannot exceed 100 characters.")]
-        public string LastName { get; set; } = string.Empty; 
+        public string Email { get; set; }
 
-        [Required]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
-        public string Email { get; set; } = string.Empty; 
+        public string Password { get; set; }
 
-        [Required]
-        [StringLength(255, ErrorMessage = "Password cannot exceed 255 characters.")]
-        public string Password { get; set; } = string.Empty; 
+        [BsonRepresentation(BsonType.String)]
+        public UserRole Role { get; set; } = UserRole.Customer;
 
-        [Required]
-        [BsonRepresentation(BsonType.String)] 
-        public UserRole Role { get; set; } 
-
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false; // Needs activation by CSR/Admin
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        [BsonIgnoreIfDefault]
-        public DateTime? LastLoginDate { get; set; }
-    }
+        public VendorDetails VendorInfo { get; set; } = null;
 
+    }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum UserRole
     {
-        Admin,
+        Customer,
         Vendor,
+        Admin,
         CSR
+    }
+
+
+    public class VendorDetails
+    {
+        public string VendorName { get; set; }
+        public string Description { get; set; }
+        public decimal AverageRating { get; set; }
+        public List<VendorRating> Ratings { get; set; } = new List<VendorRating>();
+    }
+
+    public class VendorRating
+    {
+        public string CustomerId { get; set; }
+        public int Rating { get; set; }
+        public string Comment { get; set; }
+        public DateTime RatingDate { get; set; } = DateTime.UtcNow;
     }
 }

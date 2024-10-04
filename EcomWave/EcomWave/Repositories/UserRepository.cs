@@ -1,5 +1,5 @@
-﻿using EcomWave.Configurations;
-using EcomWave.Models;
+﻿using EcomWave.Models;
+using EcomWave.Configurations;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,52 +8,61 @@ namespace EcomWave.Repositories
 {
     public class UserRepository
     {
-        private readonly IMongoCollection<User> _users;
+        private readonly MongoDbContext _context;
 
         public UserRepository(MongoDbContext context)
         {
-            _users = context.Users;
+            _context = context;
         }
 
-        // Get all users
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
-        {
-            return await _users.Find(_ => true).ToListAsync();
-        }
-
-        // Get user by ID
-        public async Task<User?> GetUserByIdAsync(string id)
-        {
-            // Find user by ID, return null if not found
-            return await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
-        }
-
-        // Create a new user
+        // Create a new user in the Users collection
         public async Task CreateUserAsync(User user)
         {
-            // Insert the new user document
-            await _users.InsertOneAsync(user);
+            await _context.Users.InsertOneAsync(user);
         }
 
-        // Update an existing user
-        public async Task UpdateUserAsync(string id, User updatedUser)
+        // Get user by email and password (login validation)
+        public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
         {
-            // Replace the entire user document with the updated one
-            await _users.ReplaceOneAsync(u => u.Id == id, updatedUser);
+            return await _context.Users.Find(u => u.Email == email && u.Password == password).FirstOrDefaultAsync();
         }
 
-        // Delete a user by ID
-        public async Task DeleteUserAsync(string id)
+        // Get a user by email
+        public async Task<User> GetUserByEmailAsync(string email)
         {
-            // Remove the user document by ID
-            await _users.DeleteOneAsync(u => u.Id == id);
+            return await _context.Users.Find(u => u.Email == email).FirstOrDefaultAsync();
         }
 
-        // Find user by email
-        public async Task<User?> GetUserByEmailAsync(string email)
+        // Get a user by ID
+        public async Task<User> GetUserByIdAsync(string userId)
         {
-            // Find user by email, return null if not found
-            return await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            return await _context.Users.Find(u => u.UserId == userId).FirstOrDefaultAsync();
+        }
+
+        // Get all users (Admin only)
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.Find(_ => true).ToListAsync();
+        }
+
+        // Update user information
+        public async Task UpdateUserAsync(User user)
+        {
+            await _context.Users.ReplaceOneAsync(u => u.UserId == user.UserId, user);
+        }
+
+        // Deactivate user account
+        public async Task DeactivateUserAsync(string userId)
+        {
+            var update = Builders<User>.Update.Set(u => u.IsActive, false);
+            await _context.Users.UpdateOneAsync(u => u.UserId == userId, update);
+        }
+
+        // Reactivate user account (CSR only)
+        public async Task ReactivateUserAsync(string userId)
+        {
+            var update = Builders<User>.Update.Set(u => u.IsActive, true);
+            await _context.Users.UpdateOneAsync(u => u.UserId == userId, update);
         }
     }
 }

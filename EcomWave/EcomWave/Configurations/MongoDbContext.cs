@@ -15,7 +15,6 @@ namespace EcomWave.Configurations
 
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Product> Products => _database.GetCollection<Product>("Products");
-        public IMongoCollection<Vendor> Vendors => _database.GetCollection<Vendor>("Vendors");
         public IMongoCollection<Order> Orders => _database.GetCollection<Order>("Orders");
         public IMongoCollection<Inventory> Inventory => _database.GetCollection<Inventory>("Inventory");
 

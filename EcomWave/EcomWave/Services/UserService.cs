@@ -1,7 +1,10 @@
 ﻿using EcomWave.Models;
 using EcomWave.Repositories;
-using System;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EcomWave.Services
@@ -9,125 +12,91 @@ namespace EcomWave.Services
     public class UserService
     {
         private readonly UserRepository _userRepository;
+        private readonly IConfiguration _configuration;
 
-        public UserService(UserRepository userRepository)
+        public UserService(UserRepository userRepository, IConfiguration configuration)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _userRepository = userRepository;
+            _configuration = configuration;
         }
 
-        // Get all users
-        public Task<IEnumerable<User>> GetAllUsersAsync()
+        // Register a customer (default role is Customer)
+        public async Task RegisterCustomerAsync(User user)
         {
-            // Directly return the Task from the repository
-            return _userRepository.GetAllUsersAsync();
-        }
-
-        // Get user by ID
-        public async Task<User> GetUserByIdAsync(string id)
-        {
-            // Validate ID parameter
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Invalid user ID", nameof(id));
-
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null)
-                throw new KeyNotFoundException("User not found.");
-
-            return user;
-        }
-
-        // Create a new user
-        public async Task CreateUserAsync(User user)
-        {
-            // Additional validation logic before creating user
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
-
-            // Check if email is already used
-            var existingUser = await _userRepository.GetUserByEmailAsync(user.Email);
-            if (existingUser != null)
-                throw new InvalidOperationException("A user with this email already exists.");
-
-            // Create the user
+            user.Role = UserRole.Customer;
+            user.IsActive = false; // Inactive until activated by CSR/Admin
             await _userRepository.CreateUserAsync(user);
         }
 
-        // Update an existing user
-        public async Task UpdateUserAsync(string id, User updatedUser)
+        // Register a vendor (Admin only)
+        public async Task RegisterVendorAsync(User user)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Invalid user ID", nameof(id));
-
-            if (updatedUser == null)
-                throw new ArgumentNullException(nameof(updatedUser));
-
-            // Check if user exists before updating
-            var existingUser = await _userRepository.GetUserByIdAsync(id);
-            if (existingUser == null)
-                throw new KeyNotFoundException("User not found.");
-
-            // Update only the necessary fields
-            existingUser.FirstName = updatedUser.FirstName;
-            existingUser.LastName = updatedUser.LastName;
-            existingUser.Email = updatedUser.Email;
-            existingUser.Role = updatedUser.Role;
-            existingUser.IsActive = updatedUser.IsActive;
-
-            // Save changes to the database
-            await _userRepository.UpdateUserAsync(id, existingUser);
+            user.Role = UserRole.Vendor;
+            user.IsActive = true; // Vendor created by Admin is active
+            await _userRepository.CreateUserAsync(user);
         }
 
-        // Delete user by ID
-        public async Task DeleteUserAsync(string id)
+        // Register a CSR (Admin only)
+        public async Task RegisterCSRAsync(User user)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Invalid user ID", nameof(id));
-
-            // Check if user exists before deleting
-            var existingUser = await _userRepository.GetUserByIdAsync(id);
-            if (existingUser == null)
-                throw new KeyNotFoundException("User not found.");
-
-            await _userRepository.DeleteUserAsync(id);
+            user.Role = UserRole.CSR;
+            user.IsActive = true; // CSR created by Admin is active
+            await _userRepository.CreateUserAsync(user);
         }
 
-        // Check if a user's email is unique
-        public async Task<bool> IsEmailUniqueAsync(string email)
+        // Login method
+        public async Task<string> LoginAsync(string email, string password)
         {
-            // Validate email
-            if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("Email cannot be empty", nameof(email));
+            var user = await _userRepository.GetUserByEmailAndPasswordAsync(email, password);
 
-            var user = await _userRepository.GetUserByEmailAsync(email);
-            return user == null;
-        }
-        //login
-        public async Task<User> LoginAsync(string email, string password)
-        {
-            // Fetch the user by email
-            var user = await _userRepository.GetUserByEmailAsync(email);
-
-            if (user == null)
+            // Check if user exists and is active
+            if (user == null || !user.IsActive)
             {
-                // Throw an exception for invalid credentials
-                throw new UnauthorizedAccessException("Invalid credentials.");
+                return null;
             }
 
-            if (user.Password != password)
+            // Generate JWT token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                // Throw an exception for invalid credentials
-                throw new UnauthorizedAccessException("Invalid credentials.");
-            }
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role.ToString())
 
-            if (!user.IsActive)
-            {
-                // Throw an exception if user is inactive
-                throw new UnauthorizedAccessException("User is inactive.");
-            }
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
 
-            // Return the user if all checks pass
-            return user;
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _userRepository.GetAllUsersAsync();
+        }
+
+        public async Task<User> GetUserByIdAsync(string userId)
+        {
+            return await _userRepository.GetUserByIdAsync(userId);
+        }
+
+        public async Task DeactivateUserAsync(string userId)
+        {
+            await _userRepository.DeactivateUserAsync(userId);
+        }
+
+        public async Task ReactivateUserAsync(string userId, string role)
+        {
+            if (role != UserRole.CSR.ToString())
+            {
+                throw new UnauthorizedAccessException("Only CSR can reactivate accounts.");
+            }
+            await _userRepository.ReactivateUserAsync(userId);
+        }
     }
 }
