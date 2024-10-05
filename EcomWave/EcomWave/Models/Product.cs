@@ -8,7 +8,7 @@ namespace EcomWave.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string ProductId { get; set; }
+        public string ProductId { get; set; } = ObjectId.GenerateNewId().ToString();
 
         [Required]
         [StringLength(100)]

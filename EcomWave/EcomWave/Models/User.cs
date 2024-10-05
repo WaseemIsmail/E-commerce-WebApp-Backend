@@ -25,7 +25,7 @@ namespace EcomWave.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        public VendorDetails VendorInfo { get; set; } = null;
+        public VendorDetails? VendorInfo { get; set; } = null;
 
     }
     [JsonConverter(typeof(JsonStringEnumConverter))]
