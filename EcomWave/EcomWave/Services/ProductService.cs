@@ -44,5 +44,11 @@ namespace EcomWave.Services
         {
             await _productRepository.SetProductStatusAsync(productId, isActive);
         }
+
+        public async Task<IEnumerable<Product>> GetProductsByStatusAsync(bool isActive)
+        {
+            return await _productRepository.GetProductsByStatusAsync(isActive);
+        }
+
     }
 }

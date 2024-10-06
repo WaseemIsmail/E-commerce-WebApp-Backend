@@ -2,6 +2,7 @@
 using EcomWave.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace EcomWave.Controllers
@@ -41,36 +42,83 @@ namespace EcomWave.Controllers
         [Authorize(Roles = "Vendor")]
         public async Task<IActionResult> CreateProduct([FromBody] Product product)
         {
+            // Retrieve the VendorId from the JWT token's claims
+            var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // Check if vendorId is retrieved properly
+            if (string.IsNullOrEmpty(vendorId))
+            {
+                return BadRequest(new { message = "Vendor ID is missing or invalid in the token." });
+            }
+
+            // Set the VendorId of the product to the logged-in vendor's ID
+            product.VendorId = vendorId;
             product.CreatedDate = DateTime.UtcNow;
+
             await _productService.CreateProductAsync(product);
-            return Ok(product);
+
+            return Ok(new { message = "Product created successfully.", product });
         }
+
 
         // PUT: api/product/{id} (Vendor can update)
         [HttpPut("{productId}")]
         [Authorize(Roles = "Vendor")]
         public async Task<IActionResult> UpdateProduct(string productId, [FromBody] Product updatedProduct)
         {
-            await _productService.UpdateProductAsync(productId, updatedProduct);
-            return NoContent();
+            try
+            {
+                await _productService.UpdateProductAsync(productId, updatedProduct);
+                return Ok(new { message = "Product updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the product.", error = ex.Message });
+            }
         }
+
 
         // DELETE: api/product/{id} (Vendor can delete)
         [HttpDelete("{productId}")]
         [Authorize(Roles = "Vendor")]
         public async Task<IActionResult> DeleteProduct(string productId)
         {
-            await _productService.DeleteProductAsync(productId);
-            return NoContent();
+            try
+            {
+                await _productService.DeleteProductAsync(productId);
+                return Ok(new { message = "Product deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the product.", error = ex.Message });
+            }
         }
+
 
         // PATCH: api/product/{id}/status (Only Admin can activate/deactivate product)
         [HttpPatch("{productId}/status")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SetProductStatus(string productId, [FromQuery] bool isActive)
         {
-            await _productService.SetProductStatusAsync(productId, isActive);
-            return NoContent();
+            try
+            {
+                await _productService.SetProductStatusAsync(productId, isActive);
+                return Ok(new { message = $"Product status set to {(isActive ? "active" : "inactive")} successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while setting the product status.", error = ex.Message });
+            }
         }
+
+        // GET: api/product/status?isActive=true
+        [HttpGet("status")]
+        public async Task<IActionResult> GetProductsByStatus([FromQuery] bool isActive)
+        {
+            var products = await _productService.GetProductsByStatusAsync(isActive);
+            return Ok(products);
+        }
+
+
     }
 }

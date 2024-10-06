@@ -106,5 +106,18 @@ namespace EcomWave.Controllers
             var user = await _userService.GetUserByIdAsync(id);
             return user == null ? NotFound() : Ok(user);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] CustomerUpdateDTO updateDTO)
+        {
+            // Update user logic
+            var updated = await _userService.UpdateCustomerAsync(id, updateDTO);
+            if (!updated)
+            {
+                return NotFound(new { message = "User not found or not a customer." });
+            }
+
+            return Ok(new { message = "User updated successfully." });
+        }
     }
 }

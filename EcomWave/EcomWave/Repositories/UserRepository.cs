@@ -45,11 +45,11 @@ namespace EcomWave.Repositories
             return await _context.Users.Find(_ => true).ToListAsync();
         }
 
-        // Update user information
-        public async Task UpdateUserAsync(User user)
-        {
-            await _context.Users.ReplaceOneAsync(u => u.UserId == user.UserId, user);
-        }
+        //// Update user information
+        //public async Task UpdateUserAsync(User user)
+        //{
+        //    await _context.Users.ReplaceOneAsync(u => u.UserId == user.UserId, user);
+        //}
 
         // Deactivate user account
         public async Task DeactivateUserAsync(string userId)
@@ -64,5 +64,12 @@ namespace EcomWave.Repositories
             var update = Builders<User>.Update.Set(u => u.IsActive, true);
             await _context.Users.UpdateOneAsync(u => u.UserId == userId, update);
         }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.UserId, user.UserId);
+            await _context.Users.ReplaceOneAsync(filter, user);
+        }
+
     }
 }

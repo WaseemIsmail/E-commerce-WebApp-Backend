@@ -19,9 +19,11 @@ namespace EcomWave.Models
 
         [Required]
         public decimal Price { get; set; }
-
         [Required]
-        public string VendorId { get; set; } // Reference to the Vendor who owns this product
+        public int Quantity { get; set; }
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? VendorId { get; set; } // Reference to the Vendor who owns this product
 
         public bool IsActive { get; set; } = true; // For activation/deactivation
 
