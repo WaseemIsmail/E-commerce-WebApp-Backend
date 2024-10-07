@@ -39,5 +39,23 @@ namespace EcomWave.Services
         {
             await _inventoryRepository.UpdateInventoryQuantityAsync(productId, quantity);
         }
+
+        // Get all inventory levels
+        public async Task<List<Inventory>> GetAllInventoryLevelsAsync()
+        {
+            return await _inventoryRepository.GetAllInventoryLevelsAsync();
+        }
+
+        // Get inventory for a specific product
+        public async Task<Inventory> GetInventoryByProductIdAsync(string productId)
+        {
+            return await _inventoryRepository.GetInventoryByProductIdAsync(productId);
+        }
+
+        // Get inventory for all products of a specific vendor
+        public async Task<List<Inventory>> GetInventoryByVendorIdAsync(string vendorId)
+        {
+            return await _inventoryRepository.GetInventoryByVendorIdAsync(vendorId);
+        }
     }
 }
