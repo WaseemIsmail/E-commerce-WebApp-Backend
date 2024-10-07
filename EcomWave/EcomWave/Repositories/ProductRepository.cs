@@ -72,5 +72,6 @@ namespace EcomWave.Repositories
             return await _products.Find(p => p.IsActive == isActive).ToListAsync();
         }
 
+
     }
 }

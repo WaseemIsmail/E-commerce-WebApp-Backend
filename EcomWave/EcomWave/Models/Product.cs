@@ -23,9 +23,9 @@ namespace EcomWave.Models
         public int Quantity { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? VendorId { get; set; } // Reference to the Vendor who owns this product
+        public string? VendorId { get; set; } 
 
-        public bool IsActive { get; set; } = true; // For activation/deactivation
+        public bool IsActive { get; set; } = true; 
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
