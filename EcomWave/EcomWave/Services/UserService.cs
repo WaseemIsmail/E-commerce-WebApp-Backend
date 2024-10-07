@@ -2,6 +2,7 @@
 using EcomWave.Models;
 using EcomWave.Repositories;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -78,6 +79,7 @@ namespace EcomWave.Services
         //    return tokenHandler.WriteToken(token);
         //}
 
+
         public async Task<string> LoginAsync(string email, string password)
         {
             // Retrieve user by email and password (ensure proper password hashing in production)
@@ -86,7 +88,7 @@ namespace EcomWave.Services
             // Check if user exists and is active
             if (user == null || user.Password != password || !user.IsActive)
             {
-                return null; // Invalid credentials or inactive account
+                return null; 
             }
 
             // Initialize the token handler and key
@@ -96,17 +98,16 @@ namespace EcomWave.Services
             // Generate claims based on user details
             var claims = new List<Claim>
             {
-                 new Claim(ClaimTypes.NameIdentifier, user.UserId), // Set the UserId as NameIdentifier claim
+                 new Claim(ClaimTypes.NameIdentifier, user.UserId), 
                  new Claim(ClaimTypes.Email, user.Email),
                  new Claim(ClaimTypes.Role, user.Role.ToString())
              };
 
-            
             // Create the token descriptor
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(7), // Token expiration time
+                Expires = DateTime.UtcNow.AddHours(7), 
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"]
@@ -143,6 +144,7 @@ namespace EcomWave.Services
             await _userRepository.ReactivateUserAsync(userId);
         }
 
+        // Update customer details
         public async Task<bool> UpdateCustomerAsync(string userId, CustomerUpdateDTO updateDTO)
         {
             // Retrieve the user from the repository
@@ -156,12 +158,46 @@ namespace EcomWave.Services
             // Update the user details
             user.FirstName = updateDTO.FirstName ?? user.FirstName;
             user.LastName = updateDTO.LastName ?? user.LastName;
-            user.Password = updateDTO.Password ?? user.Password; // Ideally, hash the password
+            user.Password = updateDTO.Password ?? user.Password; 
 
             await _userRepository.UpdateUserAsync(user);
 
             return true;
         }
+
+        // Add a rating and comment for a vendor
+        public async Task AddVendorRatingAsync(string vendorId, string customerId, int rating, string comment)
+        {
+            var vendorRating = new VendorRating
+            {
+                CustomerId = customerId,
+                Rating = rating,
+                Comment = comment,
+                RatingDate = DateTime.UtcNow
+            };
+
+            await _userRepository.AddVendorRatingAsync(vendorId, vendorRating);
+            await _userRepository.UpdateAverageRatingAsync(vendorId);
+        }
+
+
+
+        // Update comment for a vendor by a specific customer
+        public async Task UpdateVendorCommentAsync(string vendorId, string newComment, ClaimsPrincipal user)
+        {
+            var customerId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(customerId))
+            {
+                throw new ArgumentException("Customer ID is missing from claims.");
+            }
+
+            await _userRepository.UpdateVendorCommentAsync(vendorId, customerId, newComment);
+        }
+
+
+
+
 
     }
 }

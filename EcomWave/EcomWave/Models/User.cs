@@ -25,9 +25,10 @@ namespace EcomWave.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        public VendorDetails? VendorInfo { get; set; } = null;
+        public VendorDetails VendorInfo { get; set; }
 
     }
+
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum UserRole
     {
@@ -48,9 +49,11 @@ namespace EcomWave.Models
 
     public class VendorRating
     {
-        public string CustomerId { get; set; }
-        public int Rating { get; set; }
+        public string CustomerId { get; set; } // Store the ID of the customer adding the rating
+        public int Rating { get; set; } // Rating should be between 1 to 5
         public string Comment { get; set; }
         public DateTime RatingDate { get; set; } = DateTime.UtcNow;
     }
+
+
 }

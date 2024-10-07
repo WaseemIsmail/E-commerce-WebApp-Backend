@@ -30,19 +30,15 @@ namespace EcomWave.Repositories
         // Update a product by ID
         public async Task UpdateProductAsync(string productId, Product updatedProduct)
         {
-            // Define the filter to locate the specific product by its ProductId
             var filter = Builders<Product>.Filter.Eq(p => p.ProductId, productId);
 
-            // Define the update definition with fields you wish to update
             var update = Builders<Product>.Update
                 .Set(p => p.Name, updatedProduct.Name)
                 .Set(p => p.Description, updatedProduct.Description)
                 .Set(p => p.Price, updatedProduct.Price)
-                .Set(p => p.Quantity, updatedProduct.Quantity)
                 .Set(p => p.IsActive, updatedProduct.IsActive)
                 .Set(p => p.UpdatedDate, DateTime.UtcNow);
 
-            // Perform the update operation
             await _products.UpdateOneAsync(filter, update);
         }
 

@@ -119,5 +119,37 @@ namespace EcomWave.Controllers
 
             return Ok(new { message = "User updated successfully." });
         }
+
+        // Add rating to a vendor
+        [HttpPost("{vendorId}/rating")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> AddVendorRating(string vendorId, [FromBody] VendorRatingDTO ratingModel)
+        {
+            
+            var customerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(customerId))
+            {
+                return BadRequest(new { message = "Customer ID is missing or invalid in the token." });
+            }
+
+            await _userService.AddVendorRatingAsync(vendorId, customerId, ratingModel.Rating, ratingModel.Comment);
+
+            return Ok(new { message = "Rating added successfully." });
+        }
+
+
+
+        // Update comment for a vendor by a specific customer
+        [HttpPut("{vendorId}/rating/comment")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> UpdateVendorComment(string vendorId, [FromBody] UpdateCommentDTO commentDTO)
+        {
+            // Update the comment
+            await _userService.UpdateVendorCommentAsync(vendorId, commentDTO.NewComment, User);
+            return Ok(new { message = "Comment updated successfully." });
+        }
     }
+
+
 }
