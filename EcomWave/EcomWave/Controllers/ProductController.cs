@@ -71,25 +71,6 @@ namespace EcomWave.Controllers
             return Ok(new { message = "Product and inventory created successfully.", product });
         }
 
-
-
-
-
-        // PUT: api/product/{id} (Vendor can update)
-        //[HttpPut("{productId}")]
-        //[Authorize(Roles = "Vendor")]
-        //public async Task<IActionResult> UpdateProduct(string productId, [FromBody] Product updatedProduct)
-        //{
-        //    try
-        //    {
-        //        await _productService.UpdateProductAsync(productId, updatedProduct);
-        //        return Ok(new { message = "Product updated successfully." });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "An error occurred while updating the product.", error = ex.Message });
-        //    }
-        //}
         [HttpPut("{productId}")]
         [Authorize(Roles = "Vendor,Admin")]
         public async Task<IActionResult> UpdateProduct(string productId, [FromBody] Product updatedProduct, int newQuantity)

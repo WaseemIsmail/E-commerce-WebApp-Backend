@@ -29,7 +29,7 @@ namespace EcomWave.Repositories
         {
             var filter = Builders<Inventory>.Filter.Eq(inv => inv.ProductId, productId);
             var update = Builders<Inventory>.Update
-                .Set(inv => inv.Quantity, quantity)
+                .Inc(inv => inv.Quantity, quantity)
                 .Set(inv => inv.LastUpdated, DateTime.UtcNow);
 
             await _inventoryCollection.UpdateOneAsync(filter, update);
