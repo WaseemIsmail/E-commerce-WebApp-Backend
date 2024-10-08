@@ -46,20 +46,17 @@ namespace EcomWave.Controllers
             return Ok(new { message = "Customer registered successfully." });
         }
 
-
+        // Login endpoint
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
         {
             var data = await _userService.LoginAsync(loginModel.Email, loginModel.Password);
 
-            // Check if the returned data is null or invalid
             if (data == null)
                 return Unauthorized(new { message = "Invalid credentials or inactive account." });
 
-            // Cast data to a dynamic object to extract values
             var response = data as dynamic;
 
-            // Return the email, role, and token in the response
             return Ok(new
             {
                 response.email,
@@ -113,15 +110,12 @@ namespace EcomWave.Controllers
         {
             IEnumerable<User> users;
 
-            // Check if a role parameter is provided
             if (role.HasValue)
             {
-                // Find all users for the specified role
                 users = (IEnumerable<User>)await _userService.GetUsersByRoleAsync(role.Value);
             }
             else
             {
-                // Select all users
                 users = await _userService.GetAllUsersAsync();
             }
 
@@ -137,10 +131,10 @@ namespace EcomWave.Controllers
             return user == null ? NotFound() : Ok(user);
         }
 
+        // Update user
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] CustomerUpdateDTO updateDTO)
         {
-            // Update user logic
             var updated = await _userService.UpdateCustomerAsync(id, updateDTO);
             if (!updated)
             {
@@ -175,11 +169,11 @@ namespace EcomWave.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> UpdateVendorComment(string vendorId, [FromBody] UpdateCommentDTO commentDTO)
         {
-            // Update the comment
             await _userService.UpdateVendorCommentAsync(vendorId, commentDTO.NewComment, User);
             return Ok(new { message = "Comment updated successfully." });
         }
 
+        // Get notifications
         [HttpGet("notification")]
         [Authorize]
         public async Task<IActionResult> GetUserNotifications()
