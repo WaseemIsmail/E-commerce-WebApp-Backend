@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EcomWave.Models
 {
+    // Inventory Model
     public class Inventory
     {
         [BsonId]
@@ -12,12 +13,12 @@ namespace EcomWave.Models
 
         [Required]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string ProductId { get; set; } // Reference to the Product
+        public string ProductId { get; set; }
 
         [Required]
         public int Quantity { get; set; }
 
-        public int LowStockThreshold { get; set; } // Alert when quantity drops below this
+        public int LowStockThreshold { get; set; }
 
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }

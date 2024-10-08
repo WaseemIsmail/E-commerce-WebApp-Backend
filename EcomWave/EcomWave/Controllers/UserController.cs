@@ -35,6 +35,14 @@ namespace EcomWave.Controllers
             };
 
             await _userService.RegisterCustomerAsync(user);
+            var notification = new Notification
+            {
+                Message = $"{customerDTO.FirstName} {customerDTO.LastName} has registered. Please activate their account.",
+                IsRead = false
+            };
+
+            await _userService.SendNotificationByRoleAsync(notification, UserRole.CSR);
+
             return Ok(new { message = "Customer registered successfully." });
         }
 

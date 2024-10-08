@@ -46,40 +46,6 @@ namespace EcomWave.Services
             await _userRepository.CreateUserAsync(user);
         }
 
-        // Login method
-        //public async Task<string> LoginAsync(string email, string password)
-        //{
-        //    var user = await _userRepository.GetUserByEmailAndPasswordAsync(email, password);
-
-        //    // Check if user exists and is active
-        //    if (user == null || !user.IsActive)
-        //    {
-        //        return null;
-        //    }
-
-        //    // Generate JWT token
-        //    var tokenHandler = new JwtSecurityTokenHandler();
-        //    var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]);
-        //    var tokenDescriptor = new SecurityTokenDescriptor
-        //    {
-        //        Subject = new ClaimsIdentity(new[]
-        //        {
-        //            new Claim(ClaimTypes.NameIdentifier, user.UserId),
-        //            new Claim(ClaimTypes.Email, user.Email),
-        //            new Claim(ClaimTypes.Role, user.Role.ToString())
-
-        //        }),
-        //        Expires = DateTime.UtcNow.AddHours(7),
-        //        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-        //        Issuer = _configuration["Jwt:Issuer"],
-        //        Audience = _configuration["Jwt:Audience"]
-        //    };
-
-        //    var token = tokenHandler.CreateToken(tokenDescriptor);
-        //    return tokenHandler.WriteToken(token);
-        //}
-
-
         public async Task<object> LoginAsync(string email, string password)
         {
             // Retrieve user by email and password (ensure proper password hashing in production)
@@ -206,9 +172,41 @@ namespace EcomWave.Services
             await _userRepository.UpdateVendorCommentAsync(vendorId, customerId, newComment);
         }
 
+        // Add the notification to the user's notification list
+        public async Task<bool> AddNotificationToUserAsync(string userId, Notification notification)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
 
+            if (user == null)
+            {
+                return false;
+            }
 
+            user.Notifications.Add(notification);
 
+            await _userRepository.UpdateUserAsync(user);
+
+            return true;
+        }
+
+        // Add the notification to users by role
+        public async Task<bool> SendNotificationByRoleAsync(Notification notification, UserRole role)
+        {
+            var adminUsers = await _userRepository.GetUsersByRoleAsync(role);
+
+            if (adminUsers == null || !adminUsers.Any())
+            {
+                return false;
+            }
+
+            foreach (var adminUser in adminUsers)
+            {
+                adminUser.Notifications.Add(notification);
+                await _userRepository.UpdateUserAsync(adminUser);
+            }
+
+            return true;
+        }
 
     }
 }

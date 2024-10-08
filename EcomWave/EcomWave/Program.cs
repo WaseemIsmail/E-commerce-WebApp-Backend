@@ -13,9 +13,6 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     // Listen to HTTP requests on port 5000
     serverOptions.ListenAnyIP(5000);
-
-    // HTTPS requests on port 5001
-    // serverOptions.ListenAnyIP(5001, listenOptions => listenOptions.UseHttps());
 });
 
 // Add services to the container.
@@ -29,10 +26,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000") // Frontend URL
+            builder.WithOrigins("http://localhost:3000")
                    .AllowAnyHeader()
                    .AllowAnyMethod()
-                   .AllowCredentials(); // Allow cookies or tokens if needed
+                   .AllowCredentials();
         });
 });
 
@@ -100,9 +97,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
-
-// listening on an HTTPS port
-// app.UseHttpsRedirection();
 
 // Add authentication before authorization middleware
 app.UseAuthentication();

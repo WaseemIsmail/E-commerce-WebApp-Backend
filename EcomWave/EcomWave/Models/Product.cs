@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EcomWave.Models
 {
+    // Product Model
     public class Product
     {
         [BsonId]

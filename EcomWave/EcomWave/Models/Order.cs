@@ -3,13 +3,14 @@ using MongoDB.Bson;
 
 namespace EcomWave.Models
 {
+    // Order Model
     public class Order
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string OrderId { get; set; }
 
-        public string CustomerId { get; set; } // Reference to the Customer who placed the order
+        public string CustomerId { get; set; }
 
         public List<OrderItem> Items { get; set; } = new List<OrderItem>();
 

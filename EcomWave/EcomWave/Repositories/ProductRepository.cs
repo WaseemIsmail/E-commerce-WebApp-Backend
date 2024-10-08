@@ -66,9 +66,9 @@ namespace EcomWave.Repositories
             }
         }
 
+        // Find all products where IsActive matches the given status
         public async Task<IEnumerable<Product>> GetProductsByStatusAsync(bool isActive)
         {
-            // Find all products where IsActive matches the given status
             return await _products.Find(p => p.IsActive == isActive).ToListAsync();
         }
 

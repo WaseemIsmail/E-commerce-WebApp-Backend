@@ -111,11 +111,6 @@ namespace EcomWave.Repositories
             }
         }
 
-
-
-
-
-
         // Update comment for a specific customer
         public async Task UpdateVendorCommentAsync(string vendorId, string customerId, string newComment)
         {
@@ -127,7 +122,7 @@ namespace EcomWave.Repositories
             await _users.UpdateOneAsync(filter, update);
         }
 
-
+       
 
 
     }

@@ -30,10 +30,8 @@ namespace EcomWave.Repositories
         // Update a order by ID
         public async Task UpdateOrderAsync(string orderId, Order updatedOrder)
         {
-            // Define the filter to locate the specific order by its OrderId
             var filter = Builders<Order>.Filter.Eq(p => p.OrderId, orderId);
 
-            // Define the update definition with fields you wish to update
             var update = Builders<Order>.Update
                 .Set(p => p.CustomerId, updatedOrder.CustomerId)
                 .Set(p => p.Items, updatedOrder.Items)
@@ -42,7 +40,6 @@ namespace EcomWave.Repositories
                 .Set(p => p.DispatchedDate, updatedOrder.DispatchedDate)
                 .Set(p => p.DeliveredDate, updatedOrder.DeliveredDate);
 
-            // Perform the update operation
             await _orders.UpdateOneAsync(filter, update);
         }
 

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace EcomWave.Models
 {
+    // User Model
     public class User
     {
         [BsonId]
@@ -22,11 +23,13 @@ namespace EcomWave.Models
         [BsonRepresentation(BsonType.String)]
         public UserRole Role { get; set; } = UserRole.Customer;
 
-        public bool IsActive { get; set; } = false; // Needs activation by CSR/Admin
+        public bool IsActive { get; set; } = false;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public VendorDetails? VendorInfo { get; set; }
+
+         public List<Notification>? Notifications { get; set; } = new List<Notification>();
 
     }
 
@@ -55,6 +58,10 @@ namespace EcomWave.Models
         public string Comment { get; set; }
         public DateTime RatingDate { get; set; } = DateTime.UtcNow;
     }
-
-
+    public class Notification
+    {
+        public string Message { get; set; }
+        public DateTime NotificationDate { get; set; } = DateTime.UtcNow;
+        public bool IsRead { get; set; } = false;
+    }
 }
