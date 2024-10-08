@@ -12,6 +12,7 @@ namespace EcomWave.Models
         public string UserId { get; set; } = ObjectId.GenerateNewId().ToString();
 
         public string FirstName { get; set; }
+
         public string LastName { get; set; }
 
         public string Email { get; set; }
@@ -25,7 +26,7 @@ namespace EcomWave.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        public VendorDetails VendorInfo { get; set; }
+        public VendorDetails? VendorInfo { get; set; }
 
     }
 
@@ -43,8 +44,8 @@ namespace EcomWave.Models
     {
         public string VendorName { get; set; }
         public string Description { get; set; }
-        public decimal AverageRating { get; set; }
-        public List<VendorRating> Ratings { get; set; } = new List<VendorRating>();
+        public decimal? AverageRating { get; set; }
+        public List<VendorRating>? Ratings { get; set; } = new List<VendorRating>();
     }
 
     public class VendorRating

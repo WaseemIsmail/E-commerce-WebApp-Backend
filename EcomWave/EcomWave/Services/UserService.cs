@@ -80,7 +80,7 @@ namespace EcomWave.Services
         //}
 
 
-        public async Task<string> LoginAsync(string email, string password)
+        public async Task<object> LoginAsync(string email, string password)
         {
             // Retrieve user by email and password (ensure proper password hashing in production)
             var user = await _userRepository.GetUserByEmailAndPasswordAsync(email, password);
@@ -115,9 +115,15 @@ namespace EcomWave.Services
 
             // Create the token
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
 
             // Return the serialized token as a string
-            return tokenHandler.WriteToken(token);
+            return new
+            {
+                email = user.Email,
+                role = user.Role.ToString(),
+                token = tokenString
+            };
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -128,6 +134,11 @@ namespace EcomWave.Services
         public async Task<User> GetUserByIdAsync(string userId)
         {
             return await _userRepository.GetUserByIdAsync(userId);
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+        {
+            return await _userRepository.GetUsersByRoleAsync(role);
         }
 
         public async Task DeactivateUserAsync(string userId)

@@ -39,16 +39,25 @@ namespace EcomWave.Controllers
         }
 
 
-        // Login endpoint
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
         {
-            var token = await _userService.LoginAsync(loginModel.Email, loginModel.Password);
+            var data = await _userService.LoginAsync(loginModel.Email, loginModel.Password);
 
-            if (string.IsNullOrEmpty(token))
+            // Check if the returned data is null or invalid
+            if (data == null)
                 return Unauthorized(new { message = "Invalid credentials or inactive account." });
 
-            return Ok(new { token });
+            // Cast data to a dynamic object to extract values
+            var response = data as dynamic;
+
+            // Return the email, role, and token in the response
+            return Ok(new
+            {
+                response.email,
+                response.role,
+                response.token
+            });
         }
 
 
@@ -92,9 +101,22 @@ namespace EcomWave.Controllers
         // Get all users (Admin only)
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] UserRole? role)
         {
-            var users = await _userService.GetAllUsersAsync();
+            IEnumerable<User> users;
+
+            // Check if a role parameter is provided
+            if (role.HasValue)
+            {
+                // Find all users for the specified role
+                users = (IEnumerable<User>)await _userService.GetUsersByRoleAsync(role.Value);
+            }
+            else
+            {
+                // Select all users
+                users = await _userService.GetAllUsersAsync();
+            }
+
             return Ok(users);
         }
 

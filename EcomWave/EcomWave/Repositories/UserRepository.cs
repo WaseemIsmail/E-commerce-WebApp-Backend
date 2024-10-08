@@ -42,6 +42,12 @@ namespace EcomWave.Repositories
             return await _users.Find(u => u.UserId == userId).FirstOrDefaultAsync();
         }
 
+        //get users by role
+        public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+        {
+            return await _users.Find(u => u.Role == role).ToListAsync();
+        }
+
         // Get all users (Admin only)
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
