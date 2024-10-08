@@ -19,13 +19,13 @@ namespace EcomWave.Models
 
         [Required]
         public decimal Price { get; set; }
-        [Required]
-        public int Quantity { get; set; }
+
+        public int? Quantity { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
         public string? VendorId { get; set; } 
 
-        public bool IsActive { get; set; } = true; 
+        public bool IsActive { get; set; } = true;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 

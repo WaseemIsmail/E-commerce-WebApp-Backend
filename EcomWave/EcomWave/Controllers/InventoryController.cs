@@ -20,7 +20,6 @@ namespace EcomWave.Controllers
 
         // GET: api/inventory
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllInventoryLevels()
         {
             try
@@ -50,22 +49,6 @@ namespace EcomWave.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while fetching inventory details.", error = ex.Message });
-            }
-        }
-
-        // GET: api/inventory/vendor/{vendorId}
-        [HttpGet("vendor/{vendorId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetInventoryByVendorId(string vendorId)
-        {
-            try
-            {
-                var inventories = await _inventoryService.GetInventoryByVendorIdAsync(vendorId);
-                return Ok(inventories);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred while fetching inventory for the vendor.", error = ex.Message });
             }
         }
     }

@@ -39,56 +39,33 @@ namespace EcomWave.Controllers
             return Ok(product);
         }
 
-        // POST: api/product (Vendor can create)
-        //[HttpPost]
-        //[Authorize(Roles = "Vendor")]
-        //public async Task<IActionResult> CreateProduct([FromBody] Product product)
-        //{
-        //    // Retrieve the VendorId from the JWT token's claims
-        //    var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        //    // Check if vendorId is retrieved properly
-        //    if (string.IsNullOrEmpty(vendorId))
-        //    {
-        //        return BadRequest(new { message = "Vendor ID is missing or invalid in the token." });
-        //    }
-
-        //    // Set the VendorId of the product to the logged-in vendor's ID
-        //    product.VendorId = vendorId;
-        //    product.CreatedDate = DateTime.UtcNow;
-
-        //    await _productService.CreateProductAsync(product);
-
-        //    return Ok(new { message = "Product created successfully.", product });
-        //}
         [HttpPost]
-        [Authorize(Roles = "Vendor")]
+        [Authorize(Roles = "Vendor,Admin")]
         public async Task<IActionResult> CreateProduct([FromBody] Product product)
         {
-            // Retrieve the VendorId from the JWT token's claims
             var vendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // Check if vendorId is retrieved properly
             if (string.IsNullOrEmpty(vendorId))
             {
                 return BadRequest(new { message = "Vendor ID is missing or invalid in the token." });
             }
 
-            // Set the VendorId of the product to the logged-in vendor's ID
+            product.IsActive = true;
             product.VendorId = vendorId;
             product.CreatedDate = DateTime.UtcNow;
 
-            // Save the product
+            var productQuantity = product.Quantity;
+            product.Quantity = null;
+
             await _productService.CreateProductAsync(product);
 
-            // Create inventory record with the product quantity
             var inventory = new Inventory
             {
                 ProductId = product.ProductId,
-                Quantity = product.Quantity, // Use product's quantity
-                VendorId = vendorId,
-                LowStockThreshold = 10 // or another default value
+                Quantity = (int)productQuantity,
+                LowStockThreshold = 10
             };
+
             await _inventoryService.CreateInventoryAsync(inventory);
 
             return Ok(new { message = "Product and inventory created successfully.", product });
@@ -114,7 +91,7 @@ namespace EcomWave.Controllers
         //    }
         //}
         [HttpPut("{productId}")]
-        [Authorize(Roles = "Vendor")]
+        [Authorize(Roles = "Vendor,Admin")]
         public async Task<IActionResult> UpdateProduct(string productId, [FromBody] Product updatedProduct, int newQuantity)
         {
             try

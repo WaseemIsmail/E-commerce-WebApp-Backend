@@ -1,4 +1,5 @@
-﻿using EcomWave.Models;
+﻿using EcomWave.DTO;
+using EcomWave.Models;
 using EcomWave.Repositories;
 using MongoDB.Bson;
 using System.Threading.Tasks;
@@ -28,7 +29,6 @@ namespace EcomWave.Services
                 ProductId = productId,
                 Quantity = quantity,
                 LowStockThreshold = 10, // or set a default value or get from vendor input
-                VendorId = vendorId
             };
 
             await _inventoryRepository.CreateInventoryAsync(inventory);
@@ -41,7 +41,7 @@ namespace EcomWave.Services
         }
 
         // Get all inventory levels
-        public async Task<List<Inventory>> GetAllInventoryLevelsAsync()
+        public async Task<List<InventoryWithProductDTO>> GetAllInventoryLevelsAsync()
         {
             return await _inventoryRepository.GetAllInventoryLevelsAsync();
         }
@@ -50,12 +50,6 @@ namespace EcomWave.Services
         public async Task<Inventory> GetInventoryByProductIdAsync(string productId)
         {
             return await _inventoryRepository.GetInventoryByProductIdAsync(productId);
-        }
-
-        // Get inventory for all products of a specific vendor
-        public async Task<List<Inventory>> GetInventoryByVendorIdAsync(string vendorId)
-        {
-            return await _inventoryRepository.GetInventoryByVendorIdAsync(vendorId);
         }
     }
 }

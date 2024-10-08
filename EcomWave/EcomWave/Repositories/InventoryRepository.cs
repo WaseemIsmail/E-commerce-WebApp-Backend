@@ -1,5 +1,7 @@
-﻿using EcomWave.Configurations;
+﻿using EcomWave.DTO;
+using EcomWave.Configurations;
 using EcomWave.Models;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Threading.Tasks;
 
@@ -34,9 +36,33 @@ namespace EcomWave.Repositories
         }
 
         // Get all inventory levels
-        public async Task<List<Inventory>> GetAllInventoryLevelsAsync()
+        public async Task<List<InventoryWithProductDTO>> GetAllInventoryLevelsAsync()
         {
-            return await _inventoryCollection.Find(_ => true).ToListAsync();
+            var pipeline = new[]
+            {
+                new BsonDocument("$lookup", new BsonDocument
+                {
+                    { "from", "Products" },
+                    { "localField", "ProductId" },
+                    { "foreignField", "_id" },
+                    { "as", "productInfo" }
+                }),
+                new BsonDocument("$unwind", new BsonDocument("path", "$productInfo")),
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "InventoryId", "$_id" },
+                    { "ProductId", "$ProductId" },
+                    { "Quantity", "$Quantity" },
+                    { "LowStockThreshold", "$LowStockThreshold" },
+                    { "Name", "$productInfo.Name" },
+                    { "Description", "$productInfo.Description" },
+                    { "Price", "$productInfo.Price" },
+                    { "IsActive", "$productInfo.IsActive" },
+                    { "VendorId", "$productInfo.VendorId" },
+                })
+            };
+
+            return await _inventoryCollection.Aggregate<InventoryWithProductDTO>(pipeline).ToListAsync();
         }
 
         // Get inventory levels for a specific product
@@ -44,13 +70,6 @@ namespace EcomWave.Repositories
         {
             return await _inventoryCollection.Find(inv => inv.ProductId == productId).FirstOrDefaultAsync();
         }
-
-        // Get inventory levels for all products of a specific vendor
-        public async Task<List<Inventory>> GetInventoryByVendorIdAsync(string vendorId)
-        {
-            return await _inventoryCollection.Find(inv => inv.VendorId == vendorId).ToListAsync();
-        }
-
 
     }
 }

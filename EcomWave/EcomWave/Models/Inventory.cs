@@ -11,6 +11,7 @@ namespace EcomWave.Models
         public string InventoryId { get; set; }
 
         [Required]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string ProductId { get; set; } // Reference to the Product
 
         [Required]
@@ -19,7 +20,5 @@ namespace EcomWave.Models
         public int LowStockThreshold { get; set; } // Alert when quantity drops below this
 
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
-
-        public string VendorId { get; set; } // Reference to the Vendor who owns this product
     }
 }
