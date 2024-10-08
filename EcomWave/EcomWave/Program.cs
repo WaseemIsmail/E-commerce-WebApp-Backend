@@ -49,6 +49,8 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<InventoryRepository>();
 builder.Services.AddScoped<InventoryService>();
 
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<OrderService>();
 
 
 // JWT Settings from appsettings.json
