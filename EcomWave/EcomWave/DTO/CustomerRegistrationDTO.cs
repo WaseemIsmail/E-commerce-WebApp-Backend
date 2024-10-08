@@ -1,4 +1,7 @@
-﻿namespace EcomWave.DTO
+﻿// IT21215988
+// Waseem M.I.M
+
+namespace EcomWave.DTO
 {
     public class CustomerRegistrationDTO
     {

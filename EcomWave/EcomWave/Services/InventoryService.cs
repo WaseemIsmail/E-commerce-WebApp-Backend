@@ -1,4 +1,7 @@
-﻿using EcomWave.DTO;
+﻿// IT21277436
+// Jayasinghe K.W.
+
+using EcomWave.DTO;
 using EcomWave.Models;
 using EcomWave.Repositories;
 using MongoDB.Bson;
@@ -28,7 +31,7 @@ namespace EcomWave.Services
                 InventoryId = ObjectId.GenerateNewId().ToString(),
                 ProductId = productId,
                 Quantity = quantity,
-                LowStockThreshold = 10, // or set a default value or get from vendor input
+                LowStockThreshold = 10,
             };
 
             await _inventoryRepository.CreateInventoryAsync(inventory);

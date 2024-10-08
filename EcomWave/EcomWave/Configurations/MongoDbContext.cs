@@ -1,4 +1,7 @@
-﻿using EcomWave.Models;
+﻿// IT21215988
+// Waseem M.I.M
+
+using EcomWave.Models;
 using MongoDB.Driver;
 
 namespace EcomWave.Configurations
@@ -7,6 +10,7 @@ namespace EcomWave.Configurations
     {
         private readonly IMongoDatabase _database;
 
+        // Get database connection
         public MongoDbContext(MongoDbConfig config)
         {
             var client = new MongoClient(config.ConnectionString);
