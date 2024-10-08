@@ -2,6 +2,7 @@
 using EcomWave.Models;
 using EcomWave.Repositories;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -181,6 +182,8 @@ namespace EcomWave.Services
             {
                 return false;
             }
+
+            notification.NotificationId = ObjectId.GenerateNewId();
 
             user.Notifications.Add(notification);
 

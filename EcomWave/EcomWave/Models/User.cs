@@ -53,13 +53,16 @@ namespace EcomWave.Models
 
     public class VendorRating
     {
-        public string CustomerId { get; set; } // Store the ID of the customer adding the rating
-        public int Rating { get; set; } // Rating should be between 1 to 5
+        public string CustomerId { get; set; }
+        public int Rating { get; set; }
         public string Comment { get; set; }
         public DateTime RatingDate { get; set; } = DateTime.UtcNow;
     }
     public class Notification
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId NotificationId { get; set; } = ObjectId.GenerateNewId();
         public string Message { get; set; }
         public DateTime NotificationDate { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; } = false;

@@ -31,10 +31,9 @@ namespace EcomWave.Controllers
                 Password = customerDTO.Password,
                 Role = UserRole.Customer,
                 IsActive = false,
-                VendorInfo = null 
+                VendorInfo = null
             };
 
-            await _userService.RegisterCustomerAsync(user);
             var notification = new Notification
             {
                 Message = $"{customerDTO.FirstName} {customerDTO.LastName} has registered. Please activate their account.",
@@ -42,6 +41,7 @@ namespace EcomWave.Controllers
             };
 
             await _userService.SendNotificationByRoleAsync(notification, UserRole.CSR);
+
 
             return Ok(new { message = "Customer registered successfully." });
         }
@@ -178,6 +178,15 @@ namespace EcomWave.Controllers
             // Update the comment
             await _userService.UpdateVendorCommentAsync(vendorId, commentDTO.NewComment, User);
             return Ok(new { message = "Comment updated successfully." });
+        }
+
+        [HttpGet("notification")]
+        [Authorize]
+        public async Task<IActionResult> GetUserNotifications()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = await _userService.GetUserByIdAsync(userId);
+            return user == null ? NotFound() : Ok(user);
         }
     }
 
