@@ -36,6 +36,8 @@ namespace EcomWave.Controllers
                 IsActive = false,
                 VendorInfo = null
             };
+            
+            await _userService.RegisterCustomerAsync(user);
 
             var notification = new Notification
             {
