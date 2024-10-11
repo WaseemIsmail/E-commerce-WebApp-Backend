@@ -125,7 +125,13 @@ namespace EcomWave.Repositories
             await _users.UpdateOneAsync(filter, update);
         }
 
-       
+        public async Task<List<Notification>> GetNotificationsByUserIdAsync(string userId)
+        {
+            var user = await _users.Find(u => u.UserId == userId).FirstOrDefaultAsync();
+            return user?.Notifications ?? new List<Notification>();
+        }
+
+
 
 
     }

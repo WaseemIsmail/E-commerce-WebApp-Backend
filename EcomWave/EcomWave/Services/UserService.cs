@@ -214,5 +214,11 @@ namespace EcomWave.Services
             return true;
         }
 
+        public async Task<List<Notification>> GetUserNotificationsAsync(string userId)
+        {
+            return await _userRepository.GetNotificationsByUserIdAsync(userId);
+        }
+
+
     }
 }

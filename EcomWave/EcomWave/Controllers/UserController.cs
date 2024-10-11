@@ -177,14 +177,33 @@ namespace EcomWave.Controllers
         }
 
         // Get notifications
-        [HttpGet("notification")]
+        //[HttpGet("notification")]
+        //[Authorize]
+        //public async Task<IActionResult> GetUserNotifications()
+        //{
+        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    var user = await _userService.GetUserByIdAsync(userId);
+        //    return user == null ? NotFound() : Ok(user);
+        //}
+
+        [HttpGet("notifications")]
         [Authorize]
         public async Task<IActionResult> GetUserNotifications()
         {
+            // Get the logged-in user's ID from claims
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var user = await _userService.GetUserByIdAsync(userId);
-            return user == null ? NotFound() : Ok(user);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "User ID is missing in the token." });
+            }
+
+            // Fetch the notifications for this user
+            var notifications = await _userService.GetUserNotificationsAsync(userId);
+
+            return Ok(notifications);
         }
+
     }
 
 
