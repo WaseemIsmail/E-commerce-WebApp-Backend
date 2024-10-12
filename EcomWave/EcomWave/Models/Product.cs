@@ -31,6 +31,8 @@ namespace EcomWave.Models
 
         public bool IsActive { get; set; } = true;
 
+        public string? ImgUrl { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedDate { get; set; }

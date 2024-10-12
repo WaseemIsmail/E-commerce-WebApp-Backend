@@ -18,7 +18,7 @@ namespace EcomWave.DTO
         public int Quantity { get; set; }
         public int LowStockThreshold { get; set; }
         public DateTime LastUpdated { get; set; }
-
+        public string? ImgUrl { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Price { get; set; }

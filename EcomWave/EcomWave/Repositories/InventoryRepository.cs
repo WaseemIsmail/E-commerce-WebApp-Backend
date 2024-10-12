@@ -62,6 +62,7 @@ namespace EcomWave.Repositories
                     { "Price", "$productInfo.Price" },
                     { "IsActive", "$productInfo.IsActive" },
                     { "VendorId", "$productInfo.VendorId" },
+                    { "ImgUrl", "$productInfo.ImgUrl" },
                 })
             };
 
